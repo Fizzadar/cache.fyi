@@ -1,0 +1,252 @@
+*::selection {
+    background: #F2318D;
+    color: white;
+}
+
+body {
+    font-family: Helvetica Neue;
+    font-size: 16px;
+    line-height: 24px;
+    background: black;
+    color: #E1E1E1;
+}
+
+a {
+    color: #F2318D;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-decoration-color: #777;
+    transition: 100ms;
+}
+a:hover {
+    text-decoration-color: #B7B7B7;
+    color: #F29632;
+    cursor: pointer;
+}
+
+code {
+    font-size: 14px;
+}
+
+form {
+    margin: 0;
+}
+
+input, select, button, textarea {
+    font-size: 16px;
+    padding: 10px;
+    background: #333;
+    color: #E1E1E1;
+    border: none;
+}
+button {
+    cursor: pointer;
+}
+input:focus, button:hover {
+    background: #222;
+    outline: none;
+}
+textarea {
+    min-height: 600px;
+}
+
+table {
+    width: 100%;
+    word-break: break-word;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 20px 0;
+
+    button {
+        padding: 5px;
+        margin-top: 5px;
+    }
+
+    th {
+        text-align: left;
+        padding: 14px 8px 8px 8px;
+        border-bottom: 1px solid #F2318D;
+    }
+
+    tbody {
+        tr td {
+            padding: 14px 8px;
+        }
+        tr:nth-child(even) {
+            background: #111;
+        }
+        tr:hover {
+            background: #222;
+        }
+    }
+}
+
+code {
+    color: green;
+}
+
+pre {
+    color: green;
+    overflow: auto;
+    padding: 10px;
+    border: 1px dashed #333;
+}
+code::selection, pre *::selection {
+    background: green;
+    color: white;
+}
+
+.wrapper {
+    margin-left: auto;
+    margin-right: auto;
+    width: 90%;
+    max-width: 1900px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.wide {
+    width: 100%;
+}
+.quarter {
+    width: 24%;
+}
+.three-quarter {
+    width: 74%;
+}
+.half {
+    width: 49%;
+}
+
+#content-edit {
+    display: none;
+}
+
+header {
+    margin-top: 10px;
+    margin-bottom: 20px;
+
+    nav {
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+
+        code {
+            margin-left: -85px;
+            position: fixed;
+            font-size: 14px;
+        }
+    }
+}
+
+h1 {
+    nav {
+        vertical-align: middle;
+        display: inline-block;
+        font-size: 16px;
+
+        a {
+        }
+    }
+}
+
+
+.home {
+    text-align: center;
+    width: 100%;
+    font-size: 32px;
+    line-height: 60px;
+    margin-top: 40px;
+}
+
+.error {
+    width: 100%;
+    margin-top: 80px;
+    text-align: center;
+
+    h1 {
+        font-size: 40px;
+        color: #770000;
+        text-shadow:
+            1px 1px #FF0000,
+            2px 2px #FF0000,
+            3px 3px #FF0000;
+    }
+}
+
+#content-view {
+    word-break: break-word;
+    line-height: 1.5;
+
+    p {
+        margin: 15px 0;
+    }
+
+    p:has(+ ul) {
+        margin-bottom: 5px;
+    }
+
+    > ul {
+        margin: 0px 0 20px 0;
+    }
+}
+
+
+#add-content-form {
+    input[type=file], input[type=text], button {
+        display: none;
+    }
+    input[type=radio]#type-file:checked {
+        ~ input[type=file] {
+            display: inline-block;
+        }
+        ~ input[type=text] {
+            display: inline-block;
+        }
+    }
+    input[type=radio]#type-url:checked ~ input[type=text] {
+        display: inline-block;
+    }
+    input[type=radio]:checked ~ button {
+        display: inline-block;
+    }
+}
+
+
+#add-tag-form {
+    input#new-tag {
+        display: none;
+    }
+
+    select:has(option[value=NEW]:checked) ~ input#new-tag {
+        display: inline;
+    }
+}
+
+
+#delete-tag-form {
+    display: inline-block;
+
+    button {
+        font-size: 12px;
+        padding: 2px;
+    }
+}
+
+
+@media (max-width: 768px) {
+    .quarter, .three-quarter {
+        width: 100%;
+    }
+
+    header nav {
+        code {
+            display: none;
+        }
+        div.right {
+            display: none;
+        }
+    }
+}
+

@@ -1,0 +1,59 @@
+{{ template "header" . }}
+
+<div class="wrapper">
+    <div class="quarter">
+        {{ if .Page }}
+            {{ if .OtherPagesByTag }}
+            {{ range $key, $value := .OtherPagesByTag }}
+                <h3>Other #{{ $key }} Pages</h3>
+                <ul>
+                    {{ range $value }}
+                    <li><a href="/p/{{ .Path }}">{{ .Path }}</a></li>
+                    {{ end }}
+                </ul>
+            {{ end }}
+            {{ end }}
+
+            <h3>Tags</h3>
+            <ul>
+                {{ range .Page.Tags }}
+                    <li>
+                        <a href="/t/{{ . }}">#{{ . }}</a>
+                        <form id="delete-tag-form" method="POST" action="/pages/tags/delete">
+                            <input type="hidden" name="tag" value="{{ . }}" />
+                            <input type="hidden" name="pageID" value="{{ $.Page.ID }}" />
+                            <button type="submit">delete</button>
+                        </form>
+                    </li>
+                {{ end }}
+            </ul>
+
+            <form id="add-tag-form" class="wide" method="POST" action="/pages/tags">
+                <input type="hidden" name="pageID" value="{{ .Page.ID }}" />
+                <select name="tag">
+                    <option value="" disabled selected>Select tag</option>
+                {{ range .Tags }}
+                    <option value="{{ .ID }}">{{ .Name }}</option>
+                {{ end }}
+                    <option value="NEW">Add new tag..</option>
+                </select>
+                <input id="new-tag" type="text" name="tagName" placeholder="new tag name..." />
+                <button type="submit">Add tag to page</button>
+            </form>
+        {{ end }}
+    </div>
+
+    <div class="three-quarter">
+        <a id="enable-content-view">view</a> &middot; <a id="enable-content-edit">edit</a>
+
+        <div id="content-view">{{ .HTMLContent }}</div>
+        <div id="content-edit">
+            <form method="POST" action="">
+                <textarea class="wide" rows="10" name="content">{{ if .Page }}{{ .Page.Content }}{{ end }}</textarea>
+                <button type="submit">Update</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{ template "footer" . }}

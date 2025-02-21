@@ -1,0 +1,41 @@
+{{ template "header" . }}
+
+<div class="wrapper">
+    <h1 class="wide">
+        Tags
+        <nav>
+            <a href="/pages/autotags">page autotags</a>
+            &middot;
+            <a href="/content/autotags">content autotags</a>
+        </nav>
+    </h1>
+    <table class="wide">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ range .Tags }}
+            <tr>
+                <td>{{ .ID }}</td>
+                <td><a href="/t/{{ .Name }}">#{{ .Name }}</a></td>
+                <td>
+                    <form action="/tags/delete" method="POST">
+                        <input type="hidden" name="id" value="{{ .ID }}" />
+                        <button type="submit">delete tag</button>
+                    </form>
+                </td>
+            </tr>
+            {{ end }}
+        </tbody>
+    </table>
+    <form action="/tags" method="POST">
+        <input type="text" name="name" placeholder="tag name..." />
+        <button type="submit">add tag</button>
+    </form>
+</div>
+
+{{ template "footer" . }}

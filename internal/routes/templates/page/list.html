@@ -1,0 +1,13 @@
+{{ template "header" . }}
+
+<div class="wrapper">
+    <h1 class="wide">
+        Pages
+        <nav>
+            <a href="/pages/autotags">autotags</a>
+        </nav>
+    </h1>
+    {{ template "page-table" .Pages }}
+</div>
+
+{{ template "footer" . }}

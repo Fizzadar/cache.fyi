@@ -1,0 +1,59 @@
+{{ template "header" . }}
+
+<div class="wrapper">
+    <h1 class="wide">
+        Page Auto Tags
+        <nav>
+            <a href="/pages">pages</a>
+            &middot;
+            <a href="/tags">tags</a>
+            &middot;
+            <a href="/content/autotags">content autotags</a>
+        </nav>
+    </h1>
+    <table class="wide">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tag ID</th>
+                <th>Path Regex</th>
+                <th>Created At</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ range $_, $autotag := .AutoTags }}
+            <tr>
+                <td>{{ .ID }}</td>
+                <td>
+                    {{ range $.Tags }}
+                        {{ if eq .ID $autotag.TagID }}
+                            <a href="/t/{{ .Name }}">#{{ .Name }}</a>
+                        {{ end }}
+                    {{ end }}
+                </td>
+                <td><code>{{ .PathRegex }}</code></td>
+                <td>{{ .CreatedAt.Format "02 Jan 2006 15:04:05" }}</td>
+                <td>
+                    <form action="/pages/autotags/delete" method="POST">
+                        <input type="hidden" name="tag_id" value="{{ .ID }}" />
+                        <button type="submit">delete auto tag</button>
+                    </form>
+                </td>
+            </tr>
+            {{ end }}
+        </tbody>
+    </table>
+    <form class="wide" method="POST">
+        <select name="tag_id">
+            <option value="" selected>select tag</option>
+            {{ range .Tags }}
+                <option value="{{ .ID }}">{{ .Name }}</option>
+            {{ end }}
+        </select>
+        <input type="text" name="path_regex" placeholder="Regex to match path.." />
+        <button type="submit">add auto tag</button>
+    </form>
+</div>
+
+{{ template "footer" . }}

@@ -1,0 +1,41 @@
+{{ template "header" . }}
+
+<div class="wrapper">
+    <h1 class=".three-quarter">
+        Content
+        <nav>
+            <a href="/content/autotags">autotags</a>
+        </nav>
+    </h1>
+    <form class="quarter" id="add-content-form" method="POST" action="/content" enctype="multipart/form-data">
+        <h3>Add Content</h3>
+        <input type="hidden" name="redirect" value="true" />
+
+        <input type="radio" name="type" id="type-url" value="url" />
+        <label for="type-url">URL</label>
+
+        <input type="radio" name="type" id="type-file" value="file" />
+        <label for="type-file">File</label>
+
+        <input type="text" placeholder="URL" name="url" />
+        <input type="file" name="file" />
+
+        <button type="submit">add content</button>
+        <button type="reset">reset</button>
+    </form>
+
+    <form class="wide" id="add-tag-form" method="POST" action="/content/tags">
+        <select name="tag">
+            <option value="" disabled selected>Select tag</option>
+        {{ range .Tags }}
+            <option value="{{ .ID }}">{{ .Name }}</option>
+        {{ end }}
+            <option value="NEW">Add new tag..</option>
+        </select>
+        <input id="new-tag" type="text" name="tagName" placeholder="new tag name..." />
+        <button type="submit">tag content</button>
+        {{ template "content-table" .Contents }}
+    </form>
+</div>
+
+{{ template "footer" . }}

@@ -1,0 +1,4 @@
+*.db*
+./dist/
+config.yaml
+.idea

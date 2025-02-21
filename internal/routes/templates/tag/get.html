@@ -1,0 +1,15 @@
+{{ template "header" . }}
+
+<div class="wrapper">
+    <h1 calss="wide">
+        Pages Tagged #{{ .Tag}}
+    </h1>
+    {{ template "page-table" .Pages }}
+
+    <h1 class="wide">
+        Content Tagged #{{ .Tag }}
+    </h1>
+    {{ template "content-table" .Contents }}
+</div>
+
+{{ template "footer" . }}

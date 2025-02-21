@@ -1,0 +1,155 @@
+{{ define "header" }}
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="darkreader-lock">
+
+    <link rel="stylesheet" type="text/css" href="/static/layout.css" />
+
+    <title>
+        {{ if eq .Section "page" }}
+            p{{ if .Page }}{{ .Page.Path }}{{ end }} | cache.fyi
+        {{ else if eq .Section "content" }}
+            c | cache.fyi
+        {{ else if eq .Section "tags" }}
+            t{{ if .Tag }}/{{ .Tag }}{{ end }} | cache.fyi
+        {{ else }}
+            h | cache.fyi
+        {{ end }}
+    </title>
+</head>
+<body>
+<header class="wrapper">
+    <nav>
+        <div>
+            <code>cache.fyi</code>
+            <a href="/">home</a>
+            {{ if eq .Section "page" }}
+                &raquo; {{ if ne .Path "/" }}
+                    <a href="/pages">pages</a> &raquo;
+                    {{ if .Page }}{{ .Page.Path }}{{ else }}new page{{ end }}
+                {{ else }}
+                    pages
+                {{ end }}
+            {{ end }}
+
+            {{ if eq .Section "pages" }}
+                &raquo;
+                {{ if .Subsection }}
+                    <a href="/pages">pages</a> &raquo; {{ .Subsection }}
+                {{ else }}
+                    pages
+                {{ end }}
+            {{ end }}
+
+            {{ if eq .Section "content" }}
+                &raquo;
+                {{ if .Subsection }}
+                    <a href="/content">content</a> &raquo; {{ .Subsection }}
+                {{ else }}
+                    content
+                {{ end }}
+            {{ end }}
+
+            {{ if eq .Section "tags" }}
+                &raquo; {{ if .Tag }}<a href="/tags">tags</a>{{ else }}tags{{ end }}
+                {{ if .Tag }}&raquo; {{ .Tag }}{{ end }}
+            {{ end }}
+        </div>
+        <div class="right">
+            <a href="/pages">pages</a>
+            &middot;
+            <a href="/content">content</a>
+            &middot;
+            <a href="/tags">tags</a>
+            &middot;
+            <a href="/logout">logout</a>
+        </div>
+    </nav>
+</header>
+{{ end }}
+
+{{ define "footer" }}
+    <script type="text/javascript">
+        const contentView = document.getElementById("content-view");
+        const contentEdit = document.getElementById("content-edit");
+        document.getElementById("enable-content-view").addEventListener("click", () => {
+            contentView.style.display = "block";
+            contentEdit.style.display = "none";
+        })
+        document.getElementById("enable-content-edit").addEventListener("click", () => {
+            contentView.style.display = "none";
+            contentEdit.style.display = "block";
+        })
+    </script>
+</body>
+</html>
+{{ end }}
+
+
+{{ define "content-table" }}
+<table class="wide">
+    <thead>
+        <tr>
+            <th></th>
+            <th>ID</th>
+            <th>Type</th>
+            <th>URL</th>
+            <th>Content Type</th>
+            <th>Filename</th>
+            <th>Size</th>
+            <th>Tags</th>
+            <th>Created</th>
+            <th>Processed</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {{ range . }}
+        <tr>
+            <td><input type="checkbox" name="content-id" value="{{ .ID }}" /></td>
+            <td>{{ .ID }}</td>
+            <td>{{ .Type }}</td>
+            <td><strong><a href="{{ .URL }}">{{ if ge (len .URL) 50 }}{{ printf "%.50s" .URL }}...{{ else }}{{ .URL }}{{ end }}</a></strong></td>
+            <td>{{ if .ContentType }}<code>{{ .ContentType }}</code>{{ else }}&mdash;{{ end }}</td>
+            <td>{{ if .Filename }}<code>{{ .Filename }}</code>{{ else }}&mdash;{{ end }}</td>
+            <td>{{ if .SizeBytes }}<code>{{ .SizeBytes }}</code>{{ else }}&mdash;{{ end }}</td>
+            <td>{{ range .Tags }}
+                <strong><a href="/t/{{ . }}">#{{ . }}</a></strong>
+            {{ end }}</td>
+            <td>{{ .CreatedAt.Format "02 Jan 2006 15:04:05" }}</td>
+            <td>{{ if .ProcessedAt }}{{ .ProcessedAt.Format "02 Jan 2006 15:04:05" }}{{ else }}&mdash;{{ end }}</td>
+            <td>
+                {{ if .SizeBytes }}<a href="/c/f/{{ .ID }}">view</a>{{ end }}
+                {{ if .ParentID }}parent: {{ .ParentID }}{{ end }}
+            </td>
+        </tr>
+        {{ end }}
+    </tbody>
+</table>
+{{ end }}
+
+
+{{ define "page-table" }}
+<table class="wide">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Path</th>
+            <th>Tags</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{ range . }}
+        <tr>
+            <td><a href="/pages/{{ .ID }}">{{ .ID }}</a></td>
+            <td><a href="/p{{ .Path }}">{{ .Path }}</a></td>
+            <td>{{ range .Tags }}
+                <strong><a href="/t/{{ . }}">#{{ . }}</a></strong>
+            {{ end }}</td>
+        </tr>
+        {{ end }}
+    </tbody>
+</table>
+{{ end }}
