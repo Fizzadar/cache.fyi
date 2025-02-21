@@ -1,6 +1,6 @@
 # cache.fyi
 
-Cache.fyi is a cache for _my_ information. Cache.fyi is a thing. Cache.fyi does not welcome external contributions (read the blog post).
+Cache.fyi is a cache for _my_ information. Cache.fyi is [a thing](https://pointlessramblings.com/posts/build-a-thing/). Cache.fyi does not welcome external contributions ([read the blog post](https://pointlessramblings.com/posts/build-a-thing/)).
 
 ### What is cache.fyi?
 
