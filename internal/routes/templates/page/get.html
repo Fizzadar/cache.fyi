@@ -5,10 +5,14 @@
         {{ if .Page }}
             {{ if .OtherPagesByTag }}
             {{ range $key, $value := .OtherPagesByTag }}
-                <h3>Other #{{ $key }} Pages</h3>
+                <h3>#{{ $key }} Pages</h3>
                 <ul>
                     {{ range $value }}
+                    {{ if eq .Path $.Page.Path }}
+                    <li>{{ .Path }}</li>
+                    {{ else }}
                     <li><a href="/p/{{ .Path }}">{{ .Path }}</a></li>
+                    {{ end }}
                     {{ end }}
                 </ul>
             {{ end }}

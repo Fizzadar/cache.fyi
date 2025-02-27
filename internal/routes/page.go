@@ -108,9 +108,7 @@ func (rt *Routes) GetPage(w http.ResponseWriter, r *http.Request) {
 			}
 			otherPages := make([]*types.Page, 0, len(pages))
 			for _, p := range pages {
-				if p.Path != page.Path {
-					otherPages = append(otherPages, p)
-				}
+				otherPages = append(otherPages, p)
 			}
 			if len(otherPages) > 0 {
 				otherPagesByTag[tagName] = otherPages
