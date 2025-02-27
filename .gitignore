@@ -1,4 +1,4 @@
 *.db*
-./dist/
+dist/
 config.yaml
 .idea
