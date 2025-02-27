@@ -46,9 +46,13 @@
     <div class="three-quarter">
         <a id="enable-content-view">view</a> &middot; <a id="enable-content-edit">edit</a>
 
-        <div id="content-view">{{ .HTMLContent }}</div>
+        <div id="content-view">
+            {{ if .Page }}<h1 id="content-title">{{ .Page.Title }}</h1>{{ end }}
+            {{ .HTMLContent }}
+        </div>
         <div id="content-edit">
             <form method="POST" action="">
+                <input type="text" name="title" placeholder="Page title..." value="{{ if .Page }}{{ .Page.Title }}{{ end }}" />
                 <textarea class="wide" rows="10" name="content">{{ if .Page }}{{ .Page.Content }}{{ end }}</textarea>
                 <button type="submit">Update</button>
             </form>

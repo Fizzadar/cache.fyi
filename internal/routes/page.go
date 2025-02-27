@@ -137,13 +137,14 @@ func (rt *Routes) CreateOrUpsertPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	title := r.PostForm.Get("title")
 	content := r.PostForm.Get("content")
 	if content == "" {
 		rt.errorResponse(w, r, "Content is required", http.StatusBadRequest)
 		return
 	}
 
-	if err := rt.db.UpsertPage(r.Context(), path, content); err != nil {
+	if err := rt.db.UpsertPage(r.Context(), path, title, content); err != nil {
 		rt.unknownErrorResponse(w, r, "Error updating page", err)
 		return
 	}

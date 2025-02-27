@@ -137,6 +137,7 @@
         <tr>
             <th>ID</th>
             <th>Path</th>
+            <th>Title</th>
             <th>Tags</th>
         </tr>
     </thead>
@@ -145,6 +146,7 @@
         <tr>
             <td><a href="/pages/{{ .ID }}">{{ .ID }}</a></td>
             <td><a href="/p{{ .Path }}">{{ .Path }}</a></td>
+            <td><a href="/p{{ .Path }}">{{ .Title }}</a></td>
             <td>{{ range .Tags }}
                 <strong><a href="/t/{{ . }}">#{{ . }}</a></strong>
             {{ end }}</td>

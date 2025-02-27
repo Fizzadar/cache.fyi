@@ -9,6 +9,7 @@ type Page struct {
 
 	Path string
 
+	Title   string
 	Content string
 
 	CreatedAt time.Time

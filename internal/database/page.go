@@ -16,7 +16,7 @@ var ErrPageNotFound = errors.New("no such page")
 const (
 	queryGetPageBase = `
 		SELECT
-			p.id, p.path, p.content, p.created_at, p.updated_at,
+			p.id, p.path, p.title, p.content, p.created_at, p.updated_at,
 			group_concat(t.name) AS tag_names
 		FROM pages AS p
 		LEFT JOIN page__tag AS pt ON p.id = pt.page_id
@@ -42,9 +42,10 @@ const (
 		VALUES (?, ?, CURRENT_TIMESTAMP)
 	`
 	queryUpsertPage = `
-		INSERT INTO pages (path, content)
-		VALUES (?, ?)
+		INSERT INTO pages (path, title, content)
+		VALUES (?, ?, ?)
 		ON CONFLICT (path) DO UPDATE SET
+			title = EXCLUDED.title,
 			content = EXCLUDED.content,
 			updated_at = CURRENT_TIMESTAMP
 	`
@@ -109,6 +110,7 @@ func scanPageRow(row rowScanner) (*types.Page, error) {
 	if err := row.Scan(
 		&page.ID,
 		&page.Path,
+		&page.Title,
 		&page.Content,
 		&page.CreatedAt,
 		&page.UpdatedAt,
@@ -134,7 +136,7 @@ func (d *Database) GetPage(ctx context.Context, path string) (*types.Page, error
 	}
 }
 
-func (d *Database) UpsertPage(ctx context.Context, path string, content string) error {
+func (d *Database) UpsertPage(ctx context.Context, path, title, content string) error {
 	tx, err := d.db.Begin()
 	if err != nil {
 		return err
@@ -142,7 +144,7 @@ func (d *Database) UpsertPage(ctx context.Context, path string, content string) 
 	defer tx.Rollback()
 
 	// Insert/update the page
-	_, err = tx.StmtContext(ctx, d.stmtUpsertPage).ExecContext(ctx, path, content)
+	_, err = tx.StmtContext(ctx, d.stmtUpsertPage).ExecContext(ctx, path, title, content)
 	if err != nil {
 		return err
 	}

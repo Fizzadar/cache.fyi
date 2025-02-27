@@ -4,4 +4,4 @@ CREATE TABLE page_autotags (
     tag_id INTEGER NOT NULL REFERENCES tags(id),
     path_regex TEXT,
     UNIQUE(tag_id, path_regex)
-); 
+);
