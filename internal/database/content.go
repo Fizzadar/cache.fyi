@@ -248,11 +248,7 @@ func (d *Database) ListContentForTagID(ctx context.Context, tagID int64) ([]*typ
 		}
 	}
 
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return contents, nil
+	return contents, rows.Err()
 }
 
 func (d *Database) ListContentToProcess(ctx context.Context, limit int) ([]*types.Content, error) {
@@ -272,11 +268,7 @@ func (d *Database) ListContentToProcess(ctx context.Context, limit int) ([]*type
 		}
 	}
 
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return contents, nil
+	return contents, rows.Err()
 }
 
 func (d *Database) CreateContentAutoTag(tagID int, urlRegex string) (int64, error) {
@@ -301,11 +293,7 @@ func (d *Database) CreateContentAutoTag(tagID int, urlRegex string) (int64, erro
 		return 0, err
 	}
 
-	if err := tx.Commit(); err != nil {
-		return 0, err
-	}
-
-	return id, nil
+	return id, tx.Commit()
 }
 
 func (d *Database) ListContentAutoTags() ([]types.ContentAutoTag, error) {
