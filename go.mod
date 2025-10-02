@@ -3,6 +3,7 @@ module github.com/fizzadar/cache.fyi
 go 1.23.2
 
 require (
+	github.com/dustin/go-humanize v1.0.1
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/rs/zerolog v1.33.0
 	github.com/yuin/goldmark v1.7.4

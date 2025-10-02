@@ -24,7 +24,7 @@
         <h1>{{ .StatusCode }} ERROR: {{ .Message }}</h1>
         {{ if eq .StatusCode 403 }}
             <form action="/login" method="POST">
-                <input type="password" name="authHeader" placeholder="auth header" />
+                <input type="password" name="authHeader" placeholder="" />
                 <input type="hidden" name="path" value="{{ .RequestPath }}" />
             </form>
         {{ end }}

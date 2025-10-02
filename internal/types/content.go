@@ -1,6 +1,10 @@
 package types
 
-import "time"
+import (
+	"time"
+
+	"github.com/dustin/go-humanize"
+)
 
 type ContentType string
 
@@ -31,4 +35,26 @@ type Content struct {
 	LinkwardenLinkID *string
 
 	Tags []string
+}
+
+func (c *Content) PrettyBytes() string {
+	return humanize.Bytes(uint64(c.SizeBytes))
+}
+
+func (c *Content) PrettyCreatedAt() string {
+	return humanize.Time(c.CreatedAt)
+}
+
+func (c *Content) PrettyProcessedAt() string {
+	if c.ProcessedAt == nil {
+		return ""
+	}
+	return humanize.Time(*c.ProcessedAt)
+}
+
+func (c *Content) PrettyArchivedAt() string {
+	if c.ArchivedAt == nil {
+		return ""
+	}
+	return humanize.Time(*c.ArchivedAt)
 }

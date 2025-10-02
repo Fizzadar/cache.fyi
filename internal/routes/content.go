@@ -46,12 +46,47 @@ func (rt *Routes) ListContent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Group content items by parent/child relationships
+	groupedContents := groupContentsByParent(contents)
+
 	templateResponse(w, http.StatusOK, rt.listContentPageTemplate, struct {
-		Section    string
-		Subsection string
-		Contents   []*types.Content
-		Tags       []types.Tag
-	}{"content", "", contents, tags})
+		Section       string
+		Subsection    string
+		Contents      []*types.Content
+		Tags          []types.Tag
+		LinkwardenURL string
+	}{"content", "", groupedContents, tags, rt.config.LinkwardenURL})
+}
+
+// groupContentsByParent organizes content items so that children immediately follow their parents
+func groupContentsByParent(contents []*types.Content) []*types.Content {
+	// Create maps for quick lookup
+	contentMap := make(map[int64]*types.Content)
+	childrenMap := make(map[int64][]*types.Content)
+	var parents []*types.Content
+
+	// First pass: categorize content into parents and children
+	for _, content := range contents {
+		contentMap[content.ID] = content
+		if content.ParentID != nil {
+			parentID := *content.ParentID
+			childrenMap[parentID] = append(childrenMap[parentID], content)
+		} else {
+			parents = append(parents, content)
+		}
+	}
+
+	// Second pass: build the grouped list with parents followed by their children
+	var result []*types.Content
+	for _, parent := range parents {
+		result = append(result, parent)
+		if children, hasChildren := childrenMap[parent.ID]; hasChildren {
+			parent.HasChildren = true
+			result = append(result, children...)
+		}
+	}
+
+	return result
 }
 
 func (rt *Routes) ListContentURLs(w http.ResponseWriter, r *http.Request) {
@@ -91,11 +126,24 @@ func (rt *Routes) CreateContent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	urlStr := r.PostForm.Get("url")
+	tagsStr := r.PostForm.Get("tags")
 	tagIDs := make([]int64, 0)
 
+	if tagsStr != "" {
+		for _, tagName := range strings.Split(tagsStr, ",") {
+			tagID, err := rt.db.EnsureTag(r.Context(), tagName)
+			if err != nil {
+				rt.unknownErrorResponse(w, r, "Error ensuring tag", err)
+				return
+			}
+			tagIDs = append(tagIDs, tagID)
+		}
+	}
+
+	urlStr := r.PostForm.Get("url")
+
 	if urlStr != "" {
-		// Safari shares include a bunch of additional test from the webpage (no idea why), so ensure
+		// Safari shares include a bunch of additional text from the webpage (no idea why), so ensure
 		// we strip any of that away before checking the URL is valid.
 		urlStr = strings.Split(strings.ReplaceAll(urlStr, "\r\n", "\n"), "\n")[0]
 		if _, err := url.Parse(urlStr); err != nil {

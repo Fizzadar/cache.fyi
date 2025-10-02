@@ -71,6 +71,10 @@
 {{ end }}
 
 {{ define "footer" }}
+    <footer class="wrapper">
+        <a href="/logout">logout</a>
+    </footer>
+
     <script type="text/javascript">
         const contentView = document.getElementById("content-view");
         const contentEdit = document.getElementById("content-edit");
@@ -92,42 +96,66 @@
 <table class="wide">
     <thead>
         <tr>
-            <th></th>
+            <th>Toggle</th>
             <th>ID</th>
             <th>Type</th>
-            <th>URL</th>
-            <th>Content Type</th>
-            <th>Filename</th>
+            <th></th>
             <th>Size</th>
             <th>Tags</th>
             <th>Created</th>
             <th>Processed</th>
-            <th></th>
+            <th>Archived</th>
         </tr>
     </thead>
     <tbody>
-        {{ range . }}
-        <tr>
-            <td><input type="checkbox" name="content-id" value="{{ .ID }}" /></td>
+        {{ range $index, $item := .Contents }}
+        <tr{{ if .ParentID }} class="child-row" style="display: none;"{{ else }} class="parent-row"{{ end }} data-parent-id="{{ if .ParentID }}{{ .ParentID }}{{ else }}{{ .ID }}{{ end }}">
+            <td>
+                <input type="checkbox" name="content-id" value="{{ .ID }}" />
+                {{ if .HasChildren }}
+                    <button type="button" class="toggle-children" data-parent-id="{{ .ID }}">+</button>
+                {{ end }}
+            </td>
             <td>{{ .ID }}</td>
             <td>{{ .Type }}</td>
-            <td><strong><a href="{{ .URL }}">{{ if ge (len .URL) 50 }}{{ printf "%.50s" .URL }}...{{ else }}{{ .URL }}{{ end }}</a></strong></td>
-            <td>{{ if .ContentType }}<code>{{ .ContentType }}</code>{{ else }}&mdash;{{ end }}</td>
-            <td>{{ if .Filename }}<code>{{ .Filename }}</code>{{ else }}&mdash;{{ end }}</td>
-            <td>{{ if .SizeBytes }}<code>{{ .SizeBytes }}</code>{{ else }}&mdash;{{ end }}</td>
+            <td>
+                {{ if eq .Type "url" }}
+                <strong><a href="{{ .URL }}">{{ if ge (len .URL) 50 }}{{ printf "%.50s" .URL }}...{{ else }}{{ .URL }}{{ end }}</a></strong>
+                {{ else }}
+                {{ if .Filename }}<a href="/c/f/{{ .ID }}"><code>{{ .Filename }}</code></a>{{ else }}&mdash;{{ end }}
+                {{ end }}
+            </td>
+            <td>{{ if .SizeBytes }}<code>{{ .PrettyBytes }}</code>{{ else }}&mdash;{{ end }}</td>
             <td>{{ range .Tags }}
                 <strong><a href="/t/{{ . }}">#{{ . }}</a></strong>
             {{ end }}</td>
-            <td>{{ .CreatedAt.Format "02 Jan 2006 15:04:05" }}</td>
-            <td>{{ if .ProcessedAt }}{{ .ProcessedAt.Format "02 Jan 2006 15:04:05" }}{{ else }}&mdash;{{ end }}</td>
-            <td>
-                {{ if .SizeBytes }}<a href="/c/f/{{ .ID }}">view</a>{{ end }}
-                {{ if .ParentID }}parent: {{ .ParentID }}{{ end }}
-            </td>
+            <td>{{ .PrettyCreatedAt }}</td>
+            <td>{{ if .ProcessedAt }}{{ .PrettyProcessedAt }}{{ else }}&mdash;{{ end }}</td>
+            <td>{{ if .ArchivedAt }}{{ .PrettyArchivedAt }}{{ else }}&mdash;{{ end }}</td>
         </tr>
         {{ end }}
     </tbody>
 </table>
+
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleButtons = document.querySelectorAll('.toggle-children');
+
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const parentId = this.dataset.parentId;
+            const childRows = document.querySelectorAll(`tr.child-row[data-parent-id="${parentId}"]`);
+            const isExpanded = this.textContent === '-';
+
+            childRows.forEach(row => {
+                row.style.display = isExpanded ? 'none' : 'table-row';
+            });
+
+            this.textContent = isExpanded ? '+' : '-';
+        });
+    });
+});
+</script>
 {{ end }}
 
 
@@ -139,6 +167,7 @@
             <th>Path</th>
             <th>Title</th>
             <th>Tags</th>
+            <th>Pinned?</th>
         </tr>
     </thead>
     <tbody>
@@ -150,6 +179,7 @@
             <td>{{ range .Tags }}
                 <strong><a href="/t/{{ . }}">#{{ . }}</a></strong>
             {{ end }}</td>
+            <td>{{ if .Pinned }}check{{ end }}</td>
         </tr>
         {{ end }}
     </tbody>
