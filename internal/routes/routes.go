@@ -9,6 +9,7 @@ import (
 
 	"github.com/fizzadar/cache.fyi/internal/config"
 	"github.com/fizzadar/cache.fyi/internal/database"
+	"github.com/fizzadar/cache.fyi/internal/types"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/hlog"
 )
@@ -169,9 +170,16 @@ func (r *Routes) Start() {
 }
 
 func (rt *Routes) GetHome(w http.ResponseWriter, r *http.Request) {
+	pages, err := rt.db.ListPinnedPages(r.Context())
+	if err != nil {
+		rt.unknownErrorResponse(w, r, "Error fetching pinned pages", err)
+		return
+	}
+
 	templateResponse(w, http.StatusOK, rt.getHomeTemplate, struct {
 		Section string
-	}{"home"})
+		Pages   []*types.Page
+	}{"home", pages})
 }
 
 // "Login" which just sets the authHeader cookie + redirects

@@ -2,11 +2,19 @@
 
 <div class="wrapper">
     <div class="home">
+        <h1>Stuff</h1>
         <a href="/pages">pages</a>
         &middot;
         <a href="/content">content</a>
         &middot;
         <a href="/tags">tags</a>
+    </div>
+
+    <div class="home">
+        <h1>Pinned</h1>
+        {{ range .Pages }}
+            <a href="/p{{ .Path }}">{{ .Title }}</a><br />
+        {{ end }}
     </div>
 </div>
 

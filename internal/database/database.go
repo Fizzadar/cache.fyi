@@ -23,6 +23,7 @@ type Database struct {
 	stmtUpsertPage,
 	stmtInsertPage,
 	stmtListPages,
+	stmtListPinnedPages,
 	stmtListPagesForTag,
 	stmtGetPageID,
 	stmtGetPagePath,

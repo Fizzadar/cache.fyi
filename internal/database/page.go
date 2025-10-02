@@ -16,7 +16,7 @@ var ErrPageNotFound = errors.New("no such page")
 const (
 	queryGetPageBase = `
 		SELECT
-			p.id, p.path, p.title, p.content, p.created_at, p.updated_at,
+			p.id, p.path, p.title, p.content, p.pinned, p.created_at, p.updated_at,
 			group_concat(t.name) AS tag_names
 		FROM pages AS p
 		LEFT JOIN page__tag AS pt ON p.id = pt.page_id
@@ -27,6 +27,11 @@ const (
 		GROUP BY p.id
 	`
 	queryListPages = queryGetPageBase + `
+		GROUP BY p.id
+		ORDER BY path
+	`
+	queryListPinnedPages = queryGetPageBase + `
+		WHERE p.pinned
 		GROUP BY p.id
 		ORDER BY path
 	`
@@ -42,12 +47,13 @@ const (
 		VALUES (?, ?, CURRENT_TIMESTAMP)
 	`
 	queryUpsertPage = `
-		INSERT INTO pages (path, title, content)
-		VALUES (?, ?, ?)
+		INSERT INTO pages (path, title, content, pinned)
+		VALUES (?, ?, ?, ?)
 		ON CONFLICT (path) DO UPDATE SET
+			updated_at = CURRENT_TIMESTAMP,
 			title = EXCLUDED.title,
 			content = EXCLUDED.content,
-			updated_at = CURRENT_TIMESTAMP
+			pinned = EXCLUDED.pinned
 	`
 	queryInsertPageTag = `
 		INSERT INTO page__tag (page_id, tag_id)
@@ -83,6 +89,8 @@ func (d *Database) initPageStatements() error {
 		return err
 	} else if d.stmtListPages, err = d.db.Prepare(queryListPages); err != nil {
 		return err
+	} else if d.stmtListPinnedPages, err = d.db.Prepare(queryListPinnedPages); err != nil {
+		return err
 	} else if d.stmtListPagesForTag, err = d.db.Prepare(queryListPagesForTag); err != nil {
 		return err
 	} else if d.stmtGetPageID, err = d.db.Prepare(queryGetPageID); err != nil {
@@ -112,6 +120,7 @@ func scanPageRow(row rowScanner) (*types.Page, error) {
 		&page.Path,
 		&page.Title,
 		&page.Content,
+		&page.Pinned,
 		&page.CreatedAt,
 		&page.UpdatedAt,
 		&tagNames,
@@ -136,7 +145,7 @@ func (d *Database) GetPage(ctx context.Context, path string) (*types.Page, error
 	}
 }
 
-func (d *Database) UpsertPage(ctx context.Context, path, title, content string) error {
+func (d *Database) UpsertPage(ctx context.Context, path, title, content string, pinned bool) error {
 	tx, err := d.db.Begin()
 	if err != nil {
 		return err
@@ -144,7 +153,7 @@ func (d *Database) UpsertPage(ctx context.Context, path, title, content string) 
 	defer tx.Rollback()
 
 	// Insert/update the page
-	_, err = tx.StmtContext(ctx, d.stmtUpsertPage).ExecContext(ctx, path, title, content)
+	_, err = tx.StmtContext(ctx, d.stmtUpsertPage).ExecContext(ctx, path, title, content, pinned)
 	if err != nil {
 		return err
 	}
@@ -222,6 +231,29 @@ func (d *Database) GetPagePathFromID(ctx context.Context, id int64) (string, err
 
 func (d *Database) ListPages(ctx context.Context) ([]*types.Page, error) {
 	rows, err := d.stmtListPages.QueryContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var pages []*types.Page
+	for rows.Next() {
+		if page, err := scanPageRow(rows); err != nil {
+			return nil, err
+		} else {
+			pages = append(pages, page)
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return pages, nil
+}
+
+func (d *Database) ListPinnedPages(ctx context.Context) ([]*types.Page, error) {
+	rows, err := d.stmtListPinnedPages.QueryContext(ctx)
 	if err != nil {
 		return nil, err
 	}
