@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/fizzadar/cache.fyi/internal/types"
 )
@@ -16,7 +17,7 @@ const (
 	queryGetContentBase = `
 		SELECT
 			c.id, c.type, c.hash, c.url, c.content_type, c.filename, c.size_bytes,
-			c.created_at, c.processed_at, c.parent_id,
+			c.created_at, c.processed_at, c.archived_at, c.parent_id, c.linkwarden_link_id,
 			group_concat(t.name) AS tag_names
 		FROM content AS c
 		LEFT JOIN content__tag AS ct ON c.id = ct.content_id
@@ -41,9 +42,15 @@ const (
 		ORDER BY c.id
 		LIMIT ?
 	`
+	queryListContentToArchive = queryGetContentBase + `
+		WHERE c.processed_at IS NOT NULL AND c.archived_at IS NULL
+		GROUP BY c.id
+		ORDER BY c.id
+		LIMIT ?
+	`
 	queryInsertContent = `
-		INSERT INTO content (type, hash, url, data, content_type, filename, size_bytes, created_at, parent_id)
-		VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
+		INSERT INTO content (type, hash, url, data, content_type, filename, size_bytes, created_at, archived_at, parent_id)
+		VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
 	`
 	queryCreateContentAutoTag = `
 		INSERT INTO content_autotags (tag_id, url_regex)
@@ -74,6 +81,16 @@ const (
 		SET processed_at = CURRENT_TIMESTAMP
 		WHERE id = ?
 	`
+	querySetContentArchived = `
+		UPDATE content
+		SET archived_at = CURRENT_TIMESTAMP
+		WHERE id = ?
+	`
+	querySetContentLinkwardenID = `
+		UPDATE content
+		SET linkwarden_link_id = ?
+		WHERE id = ?
+	`
 )
 
 func (d *Database) initContentStatements() error {
@@ -101,7 +118,13 @@ func (d *Database) initContentStatements() error {
 		return err
 	} else if d.stmtSetContentProcessedAt, err = d.db.Prepare(querySetContentProcessed); err != nil {
 		return err
+	} else if d.stmtSetContentArchivedAt, err = d.db.Prepare(querySetContentArchived); err != nil {
+		return err
 	} else if d.stmtListContentToProcess, err = d.db.Prepare(queryListContentToProcess); err != nil {
+		return err
+	} else if d.stmtListContentToArchive, err = d.db.Prepare(queryListContentToArchive); err != nil {
+		return err
+	} else if d.stmtSetContentLinkwardenID, err = d.db.Prepare(querySetContentLinkwardenID); err != nil {
 		return err
 	}
 
@@ -121,7 +144,9 @@ func scanContentRow(row rowScanner) (*types.Content, error) {
 		&content.SizeBytes,
 		&content.CreatedAt,
 		&content.ProcessedAt,
+		&content.ArchivedAt,
 		&content.ParentID,
+		&content.LinkwardenLinkID,
 		&tagNames,
 	); err != nil {
 		return nil, err
@@ -171,7 +196,12 @@ func (d *Database) CreateContent(
 	}
 	defer tx.Rollback()
 
-	result, err := tx.StmtContext(ctx, d.stmtInsertContent).ExecContext(ctx, cType, hash, url, data, contentType, filename, len(data), parentID)
+	var archivedAt any
+	if cType == types.ContentTypeFile {
+		archivedAt = time.Now().UTC()
+	}
+
+	result, err := tx.StmtContext(ctx, d.stmtInsertContent).ExecContext(ctx, cType, hash, url, data, contentType, filename, len(data), archivedAt, parentID)
 	if err != nil {
 		return -1, err
 	}
@@ -271,6 +301,26 @@ func (d *Database) ListContentToProcess(ctx context.Context, limit int) ([]*type
 	return contents, rows.Err()
 }
 
+func (d *Database) ListContentToArchive(ctx context.Context, limit int) ([]*types.Content, error) {
+	rows, err := d.stmtListContentToArchive.QueryContext(ctx, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	contents := make([]*types.Content, 0, limit)
+
+	for rows.Next() {
+		if content, err := scanContentRow(rows); err != nil {
+			return nil, err
+		} else {
+			contents = append(contents, content)
+		}
+	}
+
+	return contents, rows.Err()
+}
+
 func (d *Database) CreateContentAutoTag(tagID int, urlRegex string) (int64, error) {
 	tx, err := d.db.Begin()
 	if err != nil {
@@ -333,6 +383,24 @@ func (d *Database) DeleteContentAutoTag(id int) error {
 	return tx.Commit()
 }
 
+func (d *Database) SetContentArchived(id int64) error {
+	tx, err := d.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	if _, err := tx.Stmt(d.stmtSetContentArchivedAt).Exec(id); err != nil {
+		return err
+	}
+
+	if err := d.txCreateLog(tx, fmt.Sprintf("Mark content as processed: content_id=%d", id), nil, nil, &id, nil); err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
 func (d *Database) SetContentProcessed(id int64) error {
 	tx, err := d.db.Begin()
 	if err != nil {
@@ -381,6 +449,24 @@ func (d *Database) DeleteContentTag(ctx context.Context, contentID, tagID int64)
 	}
 
 	if err := d.txCreateLog(tx, fmt.Sprintf("Remove tag from content: content_id=%d tag_id=%d", contentID, tagID), nil, nil, &contentID, &tagID); err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func (d *Database) SetContentLinkwardenID(ctx context.Context, contentID int64, linkwardenLinkID string) error {
+	tx, err := d.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	if _, err := tx.StmtContext(ctx, d.stmtSetContentLinkwardenID).ExecContext(ctx, linkwardenLinkID, contentID); err != nil {
+		return err
+	}
+
+	if err := d.txCreateLog(tx, fmt.Sprintf("Set Linkwarden link ID for content: content_id=%d linkwarden_link_id=%s", contentID, linkwardenLinkID), nil, nil, &contentID, nil); err != nil {
 		return err
 	}
 

@@ -36,7 +36,7 @@ func NewNestedURLContentProcessor(
 	}
 }
 
-func (ncp *NestedURLContentProcessor) ProcessContent(content *types.Content) error {
+func (ncp *NestedURLContentProcessor) ProcessContent(ctx context.Context, content *types.Content) error {
 	if content.URL == "" {
 		return nil
 	}
@@ -85,6 +85,7 @@ func (ncp *NestedURLContentProcessor) processHackerNewsURL(content *types.Conten
 	ncp.log.Debug().Str("url", data.URL).Msg("Adding nested Hacker News URL")
 	if _, err := ncp.db.CreateURLContent(context.TODO(), data.URL, nil, &content.ID); err != nil {
 		if strings.Contains(err.Error(), "UNIQUE constraint failed: content.hash") {
+			ncp.log.Warn().Str("url", data.URL).Msg("Duplicate nested URL found in processing")
 			return nil
 		}
 		return err

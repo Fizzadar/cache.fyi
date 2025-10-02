@@ -1,0 +1,1 @@
+ALTER TABLE content ADD COLUMN linkwarden_link_id TEXT;

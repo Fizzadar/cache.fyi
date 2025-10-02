@@ -8,10 +8,12 @@ import (
 )
 
 type CachefyiConfig struct {
-	Database        string        `yaml:"database"`
-	AuthHeader      string        `yaml:"authHeader"`
-	ListenAddr      string        `yaml:"listenAddr"`
-	ProcessInterval time.Duration `yaml:"processInterval"`
+	Database           string        `yaml:"database"`
+	AuthHeader         string        `yaml:"authHeader"`
+	ListenAddr         string        `yaml:"listenAddr"`
+	ProcessInterval    time.Duration `yaml:"processInterval"`
+	LinkwardenURL      string        `yaml:"linkwardenAPIURL"`
+	LinkwardenAPIToken string        `yaml:"linkwardenAPIToken"`
 }
 
 func NewCachefyiConfig(filename string) CachefyiConfig {

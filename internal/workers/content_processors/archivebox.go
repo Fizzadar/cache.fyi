@@ -1,6 +1,8 @@
 package content_processors
 
 import (
+	"context"
+
 	"github.com/fizzadar/cache.fyi/internal/config"
 	"github.com/fizzadar/cache.fyi/internal/database"
 	"github.com/fizzadar/cache.fyi/internal/types"
@@ -25,7 +27,7 @@ func NewArchiveboxContentProcessor(
 	}
 }
 
-func (acp *ArchiveboxContentProcessor) ProcessContent(content *types.Content) error {
+func (acp *ArchiveboxContentProcessor) ProcessContent(ctx context.Context, content *types.Content) error {
 	if content.URL == "" {
 		return nil
 	}

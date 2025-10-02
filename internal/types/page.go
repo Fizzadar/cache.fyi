@@ -12,6 +12,8 @@ type Page struct {
 	Title   string
 	Content string
 
+	Pinned bool
+
 	CreatedAt time.Time
 	UpdatedAt *time.Time
 

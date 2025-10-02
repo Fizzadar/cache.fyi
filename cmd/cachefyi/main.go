@@ -56,5 +56,4 @@ func main() {
 	server.Stop()
 
 	log.Info().Msg("Stopped cache.fyi")
-
 }

@@ -44,7 +44,10 @@ type Database struct {
 	stmtInsertContentTag,
 	stmtDeleteContentTag,
 	stmtSetContentProcessedAt,
+	stmtSetContentArchivedAt,
 	stmtListContentToProcess,
+	stmtListContentToArchive,
+	stmtSetContentLinkwardenID,
 
 	stmtListTags,
 	stmtCreateTag,

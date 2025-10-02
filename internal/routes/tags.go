@@ -60,11 +60,12 @@ func (rt *Routes) GetTag(w http.ResponseWriter, r *http.Request) {
 	}
 
 	templateResponse(w, http.StatusOK, rt.getTagTemplate, struct {
-		Section  string
-		Tag      string
-		Contents []*types.Content
-		Pages    []*types.Page
-	}{"tags", tagName, content, pages})
+		Section       string
+		Tag           string
+		Contents      []*types.Content
+		Pages         []*types.Page
+		LinkwardenURL string
+	}{"tags", tagName, content, pages, rt.config.LinkwardenURL})
 }
 
 func (rt *Routes) CreateTag(w http.ResponseWriter, r *http.Request) {

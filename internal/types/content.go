@@ -24,7 +24,11 @@ type Content struct {
 
 	CreatedAt   time.Time
 	ProcessedAt *time.Time
+	ArchivedAt  *time.Time
 	ParentID    *int64
+	HasChildren bool
+
+	LinkwardenLinkID *string
 
 	Tags []string
 }
