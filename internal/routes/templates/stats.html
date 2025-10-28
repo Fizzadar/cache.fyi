@@ -1,0 +1,61 @@
+{{ template "header" . }}
+
+<main class="wrapper">
+    <h1>Database Statistics</h1>
+
+    <h2>Storage</h2>
+    <table>
+        <tbody>
+            <tr>
+                <td><strong>Database File</strong></td>
+                <td><code>{{ .Stats.DatabaseFilename }}</code></td>
+            </tr>
+            <tr>
+                <td><strong>Total Size</strong></td>
+                <td><code>{{ .Stats.DatabaseSizeFormatted }}</code></td>
+            </tr>
+            <tr>
+                <td><strong>Page Size</strong></td>
+                <td><code>{{ .Stats.PageSizeFormatted }}</code></td>
+            </tr>
+            <tr>
+                <td><strong>Page Count</strong></td>
+                <td><code>{{ .Stats.PageCount }}</code> pages</td>
+            </tr>
+            <tr>
+                <td><strong>Freelist Pages</strong></td>
+                <td><code>{{ .Stats.FreelistPages }}</code> pages</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Records</h2>
+    <table>
+        <tbody>
+            <tr>
+                <td><strong>Content Items</strong></td>
+                <td><code>{{ .Stats.ContentCount }}</code></td>
+            </tr>
+            <tr>
+                <td><strong>Pages</strong></td>
+                <td><code>{{ .Stats.PageRecordCount }}</code></td>
+            </tr>
+            <tr>
+                <td><strong>Tags</strong></td>
+                <td><code>{{ .Stats.TagCount }}</code></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Metadata</h2>
+    <table>
+        <tbody>
+            <tr>
+                <td><strong>Schema Version</strong></td>
+                <td><code>{{ .Stats.SchemaVersion }}</code></td>
+            </tr>
+        </tbody>
+    </table>
+</main>
+
+{{ template "footer" . }}

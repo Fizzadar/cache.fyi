@@ -36,7 +36,8 @@ type Routes struct {
 	getTagTemplate,
 	listContentPageTemplate,
 	listContentAutoTagsTemplate,
-	listPageAutoTagsTemplate *template.Template
+	listPageAutoTagsTemplate,
+	getStatsTemplate *template.Template
 }
 
 func NewRoutes(cfg config.CachefyiConfig, log zerolog.Logger, db *database.Database) *Routes {
@@ -53,6 +54,8 @@ func NewRoutes(cfg config.CachefyiConfig, log zerolog.Logger, db *database.Datab
 	} else if err = routes.initContentTemplates(); err != nil {
 		panic(err)
 	} else if err := routes.initTagTemplates(); err != nil {
+		panic(err)
+	} else if err := routes.initStatsTemplates(); err != nil {
 		panic(err)
 	}
 
@@ -133,6 +136,9 @@ func NewRoutes(cfg config.CachefyiConfig, log zerolog.Logger, db *database.Datab
 	mux.HandleFunc("POST /tags", authHandler(routes.CreateTag))
 	mux.HandleFunc("POST /tags/delete", authHandler(routes.DeleteTag))
 	mux.HandleFunc("GET /t/{tagName}", authHandler(routes.GetTag))
+
+	// Stats
+	mux.HandleFunc("GET /stats", authHandler(routes.GetStats))
 
 	// Add zerolog middleware
 	handler := hlog.NewHandler(log)(mux)
