@@ -21,9 +21,9 @@
 <header class="wrapper">
 <div class="wrapper">
     <div class="error">
-        <h1>{{ .StatusCode }} ERROR: {{ .Message }}</h1>
+        <h1 onclick="document.getElementById('login-form').submit()">{{ .StatusCode }} ERROR: {{ .Message }}</h1>
         {{ if eq .StatusCode 403 }}
-            <form action="/login" method="POST">
+            <form action="/login" method="POST" id="login-form">
                 <input type="password" name="authHeader" placeholder="" />
                 <input type="hidden" name="path" value="{{ .RequestPath }}" />
             </form>

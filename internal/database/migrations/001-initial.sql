@@ -17,7 +17,7 @@ CREATE TABLE pages (
 );
 
 --
--- Content
+-- Content NOTE: rewritten w/o data in migration 015
 --
 
 CREATE TABLE content (

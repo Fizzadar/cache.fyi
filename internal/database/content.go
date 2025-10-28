@@ -49,8 +49,12 @@ const (
 		LIMIT ?
 	`
 	queryInsertContent = `
-		INSERT INTO content (type, hash, url, data, content_type, filename, size_bytes, created_at, archived_at, parent_id)
-		VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
+		INSERT INTO content (type, hash, url, content_type, filename, size_bytes, created_at, archived_at, parent_id, data)
+		VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, '')
+	`
+	queryInsertContentData = `
+		INSERT INTO content_data (content_id, data)
+		VALUES (?, ?)
 	`
 	queryCreateContentAutoTag = `
 		INSERT INTO content_autotags (tag_id, url_regex)
@@ -74,7 +78,7 @@ const (
 		WHERE content_id = ? AND tag_id = ?
 	`
 	queryGetContentData = `
-		SELECT data FROM content WHERE id = ?
+		SELECT data FROM content_data WHERE content_id = ?
 	`
 	querySetContentProcessed = `
 		UPDATE content
@@ -105,6 +109,8 @@ func (d *Database) initContentStatements() error {
 	} else if d.stmtListContentForTag, err = d.db.Prepare(queryListContentForTag); err != nil {
 		return err
 	} else if d.stmtInsertContent, err = d.db.Prepare(queryInsertContent); err != nil {
+		return err
+	} else if d.stmtInsertContentData, err = d.db.Prepare(queryInsertContentData); err != nil {
 		return err
 	} else if d.stmtCreateContentAutoTag, err = d.db.Prepare(queryCreateContentAutoTag); err != nil {
 		return err
@@ -201,7 +207,7 @@ func (d *Database) CreateContent(
 		archivedAt = time.Now().UTC()
 	}
 
-	result, err := tx.StmtContext(ctx, d.stmtInsertContent).ExecContext(ctx, cType, hash, url, data, contentType, filename, len(data), archivedAt, parentID)
+	result, err := tx.StmtContext(ctx, d.stmtInsertContent).ExecContext(ctx, cType, hash, url, contentType, filename, len(data), archivedAt, parentID)
 	if err != nil {
 		return -1, err
 	}
@@ -209,6 +215,13 @@ func (d *Database) CreateContent(
 	id, err := result.LastInsertId()
 	if err != nil {
 		return -1, err
+	}
+
+	// Insert data into content_data table if data is provided
+	if len(data) > 0 {
+		if _, err := tx.StmtContext(ctx, d.stmtInsertContentData).ExecContext(ctx, id, data); err != nil {
+			return -1, err
+		}
 	}
 
 	for _, tagID := range tagIDs {

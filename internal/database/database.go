@@ -38,6 +38,7 @@ type Database struct {
 	stmtListContent,
 	stmtListContentForTag,
 	stmtInsertContent,
+	stmtInsertContentData,
 	stmtCreateContentAutoTag,
 	stmtListContentAutoTags,
 	stmtDeleteContentAutoTag,
