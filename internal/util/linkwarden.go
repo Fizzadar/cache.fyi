@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"slices"
 )
 
 var linkwardenHTTPClient = &http.Client{}
@@ -17,11 +18,13 @@ type LinkwardenRequest struct {
 	APIToken string
 	Method   string
 	Body     any
+	OKCodes  []int
 }
 
 type LinkwardenResponse struct {
-	Header http.Header
-	Body   []byte
+	StatusCode int
+	Header     http.Header
+	Body       []byte
 }
 
 func DoLinkwardenRequest(ctx context.Context, req LinkwardenRequest) (*LinkwardenResponse, error) {
@@ -53,7 +56,12 @@ func DoLinkwardenRequest(ctx context.Context, req LinkwardenRequest) (*Linkwarde
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	okCodes := req.OKCodes
+	if len(okCodes) == 0 {
+		okCodes = []int{http.StatusOK}
+	}
+
+	if !slices.Contains(okCodes, resp.StatusCode) {
 		return nil, fmt.Errorf("API request failed with status %d", resp.StatusCode)
 	}
 
@@ -63,7 +71,8 @@ func DoLinkwardenRequest(ctx context.Context, req LinkwardenRequest) (*Linkwarde
 	}
 
 	return &LinkwardenResponse{
-		Header: resp.Header,
-		Body:   data,
+		StatusCode: resp.StatusCode,
+		Header:     resp.Header,
+		Body:       data,
 	}, nil
 }

@@ -41,6 +41,8 @@ func NewLinkwardenContentProcessor(
 }
 
 func (lcp *LinkwardenContentProcessor) ProcessContent(ctx context.Context, content *types.Content) error {
+	lcp.log.Trace().Any("content", content).Msg("Process content")
+
 	// Only process URL content that doesn't already have a Linkwarden link ID
 	if content.Type != types.ContentTypeURL || content.URL == "" {
 		return nil
@@ -78,8 +80,12 @@ func (lcp *LinkwardenContentProcessor) ProcessContent(ctx context.Context, conte
 }
 
 type linkwardenCreateLinkRequest struct {
-	URL  string `json:"url"`
-	Name string `json:"name,omitempty"`
+	URL        string `json:"url"`
+	Name       string `json:"name,omitempty"`
+	Type       string `json:"type"`
+	Collection struct {
+		ID int `json:"id"`
+	} `json:"collection"`
 }
 
 type linkwardenCreateLinkResponse struct {
@@ -91,8 +97,10 @@ type linkwardenCreateLinkResponse struct {
 func (lcp *LinkwardenContentProcessor) createLinkwardenLink(ctx context.Context, content *types.Content) (int64, error) {
 	reqBody := linkwardenCreateLinkRequest{
 		URL:  content.URL,
-		Name: content.URL, // Use URL as name if no title is available
+		Name: fmt.Sprintf("ContentID=%d, %s", content.ID, content.URL),
+		Type: "url",
 	}
+	reqBody.Collection.ID = lcp.config.LinwardenCollectionID
 
 	req := util.LinkwardenRequest{
 		APIToken: lcp.config.LinkwardenAPIToken,
@@ -100,11 +108,16 @@ func (lcp *LinkwardenContentProcessor) createLinkwardenLink(ctx context.Context,
 		Endpoint: "/api/v1/links",
 		Method:   http.MethodPost,
 		Body:     reqBody,
+		OKCodes:  []int{http.StatusOK, http.StatusConflict},
 	}
 
 	resp, err := util.DoLinkwardenRequest(ctx, req)
 	if err != nil {
 		return 0, err
+	}
+
+	if resp.StatusCode == http.StatusConflict {
+		lcp.log.Warn().Any("DATA", string(resp.Body)).Msg("GOTRESP")
 	}
 
 	var linkResp linkwardenCreateLinkResponse

@@ -33,7 +33,6 @@ func NewContentProcessWorker(cfg config.CachefyiConfig, log zerolog.Logger, db *
 		db:     db,
 		processors: []content_processors.ContentProcessor{
 			content_processors.NewLinkwardenContentProcessor(cfg, log, db),
-			content_processors.NewArchiveboxContentProcessor(cfg, log, db),
 			content_processors.NewNestedURLContentProcessor(cfg, log, db),
 		},
 	}
@@ -84,7 +83,9 @@ func (cpw *ContentProcessWorker) loop(ctx context.Context) {
 		}
 
 		if len(contents) == ContentProcessBatchSize {
-			continueCh <- struct{}{}
+			go func() {
+				continueCh <- struct{}{}
+			}()
 		}
 	}
 }

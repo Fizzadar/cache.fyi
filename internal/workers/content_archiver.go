@@ -73,7 +73,9 @@ func (cpw *ContentArchiveWorker) loop(ctx context.Context) {
 		}
 
 		if len(contents) == ContentArchiveBatchSize {
-			continueCh <- struct{}{}
+			go func() {
+				continueCh <- struct{}{}
+			}()
 		}
 	}
 }
