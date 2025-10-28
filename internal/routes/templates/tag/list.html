@@ -21,7 +21,7 @@
             {{ range .Tags }}
             <tr>
                 <td>{{ .ID }}</td>
-                <td><a href="/t/{{ .Name }}">#{{ .Name }}</a></td>
+                <td><a href="/t/{{ .Name }}" class="tag">#{{ .Name }}</a></td>
                 <td>
                     <form action="/tags/delete" method="POST">
                         <input type="hidden" name="id" value="{{ .ID }}" />

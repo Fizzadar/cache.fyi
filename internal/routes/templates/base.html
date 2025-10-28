@@ -139,7 +139,7 @@
             </td>
             <td>{{ if .SizeBytes }}<code>{{ .PrettyBytes }}</code>{{ else }}&mdash;{{ end }}</td>
             <td>{{ range .Tags }}
-                <strong><a href="/t/{{ . }}">#{{ . }}</a></strong>
+                <a href="/t/{{ . }}" class="tag">#{{ . }}</a>
             {{ end }}</td>
             <td>{{ .PrettyCreatedAt }}</td>
             <td>{{ if .ProcessedAt }}{{ .PrettyProcessedAt }}{{ else }}&mdash;{{ end }}</td>

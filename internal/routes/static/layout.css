@@ -292,6 +292,23 @@ h1 {
 }
 
 
+
+
+#editor {
+    height: 600px;
+}
+
+.tag {
+    padding: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    font-family: Courier New;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+
+
+
 @media (max-width: 768px) {
     .quarter, .three-quarter {
         width: 100%;
@@ -305,9 +322,4 @@ h1 {
             display: none;
         }
     }
-}
-
-
-#editor {
-    height: 600px;
 }
