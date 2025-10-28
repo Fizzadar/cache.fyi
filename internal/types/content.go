@@ -31,6 +31,7 @@ type Content struct {
 	ArchivedAt  *time.Time
 	ParentID    *int64
 	HasChildren bool
+	Depth       int
 
 	LinkwardenLinkID *string
 

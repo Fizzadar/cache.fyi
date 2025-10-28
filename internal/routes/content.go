@@ -58,32 +58,49 @@ func (rt *Routes) ListContent(w http.ResponseWriter, r *http.Request) {
 	}{"content", "", groupedContents, tags, rt.config.LinkwardenURL})
 }
 
-// groupContentsByParent organizes content items so that children immediately follow their parents
+// groupContentsByParent organizes content items in a hierarchical structure with full nesting
 func groupContentsByParent(contents []*types.Content) []*types.Content {
 	// Create maps for quick lookup
 	contentMap := make(map[int64]*types.Content)
 	childrenMap := make(map[int64][]*types.Content)
-	var parents []*types.Content
+	var roots []*types.Content
 
-	// First pass: categorize content into parents and children
+	// First pass: build maps and identify root items
 	for _, content := range contents {
 		contentMap[content.ID] = content
 		if content.ParentID != nil {
 			parentID := *content.ParentID
 			childrenMap[parentID] = append(childrenMap[parentID], content)
 		} else {
-			parents = append(parents, content)
+			roots = append(roots, content)
 		}
 	}
 
-	// Second pass: build the grouped list with parents followed by their children
+	// Second pass: mark items that have children and build nested structure
 	var result []*types.Content
-	for _, parent := range parents {
-		result = append(result, parent)
-		if children, hasChildren := childrenMap[parent.ID]; hasChildren {
-			parent.HasChildren = true
-			result = append(result, children...)
+
+	var appendWithChildren func(item *types.Content, depth int)
+	appendWithChildren = func(item *types.Content, depth int) {
+		// Mark if this item has children
+		if _, hasChildren := childrenMap[item.ID]; hasChildren {
+			item.HasChildren = true
 		}
+
+		// Set depth for indentation
+		item.Depth = depth
+		result = append(result, item)
+
+		// Recursively append children
+		if children, hasChildren := childrenMap[item.ID]; hasChildren {
+			for _, child := range children {
+				appendWithChildren(child, depth+1)
+			}
+		}
+	}
+
+	// Build the result starting from roots
+	for _, root := range roots {
+		appendWithChildren(root, 0)
 	}
 
 	return result

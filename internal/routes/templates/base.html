@@ -109,21 +109,29 @@
     </thead>
     <tbody>
         {{ range $index, $item := .Contents }}
-        <tr{{ if .ParentID }} class="child-row" style="display: none;"{{ else }} class="parent-row"{{ end }} data-parent-id="{{ if .ParentID }}{{ .ParentID }}{{ else }}{{ .ID }}{{ end }}">
+        <tr class="{{ if .ParentID }}child-row{{ else }}root-row{{ end }}"
+            style="{{ if .ParentID }}display: none;{{ end }}"
+            data-content-id="{{ .ID }}"
+            data-parent-id="{{ if .ParentID }}{{ .ParentID }}{{ else }}{{ .ID }}{{ end }}"
+            data-depth="{{ .Depth }}">
             <td>
-                <input type="checkbox" name="content-id" value="{{ .ID }}" />
-                {{ if .HasChildren }}
-                    <button type="button" class="toggle-children" data-parent-id="{{ .ID }}">+</button>
-                {{ end }}
+                <div class="content-row-controls depth-{{ .Depth }}">
+                    <input type="checkbox" name="content-id" value="{{ .ID }}" />
+                    {{ if .HasChildren }}
+                        <button type="button" class="toggle-children" data-content-id="{{ .ID }}">+</button>
+                    {{ end }}
+                </div>
             </td>
             <td>{{ .ID }}</td>
             <td>{{ .Type }}</td>
             <td>
-                {{ if eq .Type "url" }}
-                <strong><a href="{{ .URL }}">{{ if ge (len .URL) 50 }}{{ printf "%.50s" .URL }}...{{ else }}{{ .URL }}{{ end }}</a></strong>
-                {{ else }}
-                {{ if .Filename }}<a href="/c/f/{{ .ID }}"><code>{{ .Filename }}</code></a>{{ else }}&mdash;{{ end }}
-                {{ end }}
+                <div class="content-cell depth-{{ .Depth }}">
+                    {{ if eq .Type "url" }}
+                    <strong><a href="{{ .URL }}">{{ if ge (len .URL) 50 }}{{ printf "%.50s" .URL }}...{{ else }}{{ .URL }}{{ end }}</a></strong>
+                    {{ else }}
+                    {{ if .Filename }}<a href="/c/f/{{ .ID }}"><code>{{ .Filename }}</code></a>{{ else }}&mdash;{{ end }}
+                    {{ end }}
+                </div>
             </td>
             <td>{{ if .SizeBytes }}<code>{{ .PrettyBytes }}</code>{{ else }}&mdash;{{ end }}</td>
             <td>{{ range .Tags }}
@@ -141,16 +149,39 @@
 document.addEventListener('DOMContentLoaded', function() {
     const toggleButtons = document.querySelectorAll('.toggle-children');
 
+    function toggleDescendants(parentId, show) {
+        const childRows = document.querySelectorAll(`tr[data-content-id]`);
+
+        childRows.forEach(row => {
+            if (row.dataset.parentId === parentId && row.dataset.contentId !== parentId) {
+                const contentId = row.dataset.contentId;
+
+                // Show/hide this child
+                row.style.display = show ? 'table-row' : 'none';
+
+                // If hiding, also recursively hide all descendants
+                if (!show) {
+                    toggleDescendants(contentId, false);
+
+                    // Reset toggle buttons for hidden descendants
+                    const toggleBtn = row.querySelector('.toggle-children');
+                    if (toggleBtn) {
+                        toggleBtn.textContent = '+';
+                    }
+                }
+            }
+        });
+    }
+
     toggleButtons.forEach(button => {
         button.addEventListener('click', function() {
-            const parentId = this.dataset.parentId;
-            const childRows = document.querySelectorAll(`tr.child-row[data-parent-id="${parentId}"]`);
+            const contentId = this.dataset.contentId;
             const isExpanded = this.textContent === '-';
 
-            childRows.forEach(row => {
-                row.style.display = isExpanded ? 'none' : 'table-row';
-            });
+            // Toggle direct children
+            toggleDescendants(contentId, !isExpanded);
 
+            // Update button text
             this.textContent = isExpanded ? '+' : '-';
         });
     });
