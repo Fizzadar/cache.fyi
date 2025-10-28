@@ -9,7 +9,7 @@
 
     <title>
         {{ if eq .Section "page" }}
-            p{{ if .Page }}{{ .Page.Path }}{{ end }} | cache.fyi
+            p{{ if .Page }}{{ .Page.Title }} | {{ .Page.Path }}{{ end }} | cache.fyi
         {{ else if eq .Section "content" }}
             c | cache.fyi
         {{ else if eq .Section "tags" }}
@@ -76,6 +76,8 @@
     <footer class="wrapper">
         <a href="/logout">logout</a>
     </footer>
+
+    <script src="/static/overtype.min.js"></script>
 
     <script type="text/javascript">
         const contentView = document.getElementById("content-view");

@@ -50,10 +50,6 @@
     <div class="three-quarter">
         <a id="enable-content-view">view</a> &middot; <a id="enable-content-edit">edit</a>
 
-        <div id="content-view">
-            {{ if .Page }}<h1 id="content-title">{{ .Page.Title }}</h1>{{ end }}
-            {{ .HTMLContent }}
-        </div>
         <div id="content-edit">
             <form method="POST" action="">
                 <input type="text" name="title" placeholder="Page title..." value="{{ if .Page }}{{ .Page.Title }}{{ end }}" />
@@ -61,9 +57,26 @@
                 <label for="pinned">Pinned</label>
                 <input type="checkbox" id="pinned" name="pinned" {{ if and .Page .Page.Pinned }}checked{{ end }} />
 
-                <textarea class="wide" rows="10" name="content">{{ if .Page }}{{ .Page.Content }}{{ end }}</textarea>
+                <div id="editor"></div>
+                <script type="text/javascript">
+                    document.addEventListener("DOMContentLoaded", function() {
+                        const [editor] = new OverType("#editor", {
+                            // autoResize: true,
+                            // minHeight: "600px",
+                            theme: "cave",
+                            textareaProps: {
+                                name: "content",
+                            },
+                        });
+                        editor.setValue("{{ .Page.Content }}")
+                    });
+                </script>
                 <button type="submit">Update</button>
             </form>
+        </div>
+        <div id="content-view">
+            {{ if .Page }}<h1 id="content-title">{{ .Page.Title }}</h1>{{ end }}
+            {{ .HTMLContent }}
         </div>
     </div>
 </div>
