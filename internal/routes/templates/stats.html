@@ -47,6 +47,32 @@
         </tbody>
     </table>
 
+    <h2>Content</h2>
+    <table>
+        <tbody>
+            <tr>
+                <td><strong>Total Content Files Size</strong></td>
+                <td><code>{{ .Stats.ContentFilesSizeFormatted }}</code></td>
+            </tr>
+            {{ range $type, $count := .Stats.ContentItemsByType }}
+            <tr>
+                <td><strong>Content Items ({{ $type }})</strong></td>
+                <td><code>{{ $count }}</code></td>
+            </tr>
+            {{ end }}
+        </tbody>
+    </table>
+
+    <h2>Pages</h2>
+    <table>
+        <tbody>
+            <tr>
+                <td><strong>Total Page Words</strong></td>
+                <td><code>{{ .Stats.TotalPageWords }}</code></td>
+            </tr>
+        </tbody>
+    </table>
+
     <h2>Metadata</h2>
     <table>
         <tbody>

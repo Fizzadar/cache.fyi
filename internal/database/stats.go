@@ -18,6 +18,10 @@ type DatabaseStats struct {
 	FreelistPages         int64
 	SchemaVersion         string
 	DatabaseFilename      string
+	ContentFilesSize      int64
+	ContentFilesSizeFormatted string
+	ContentItemsByType    map[string]int64
+	TotalPageWords        int64
 }
 
 func (d *Database) GetStats(ctx context.Context) (*DatabaseStats, error) {
@@ -75,6 +79,42 @@ func (d *Database) GetStats(ctx context.Context) (*DatabaseStats, error) {
 	// Get tag count
 	row = d.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM tags")
 	if err := row.Scan(&stats.TagCount); err != nil {
+		return nil, err
+	}
+
+	// Get total size of content files
+	row = d.db.QueryRowContext(ctx, "SELECT COALESCE(SUM(size_bytes), 0) FROM content WHERE size_bytes IS NOT NULL")
+	if err := row.Scan(&stats.ContentFilesSize); err != nil {
+		return nil, err
+	}
+	stats.ContentFilesSizeFormatted = humanize.Bytes(uint64(stats.ContentFilesSize))
+
+	// Get content items by type
+	stats.ContentItemsByType = make(map[string]int64)
+	rows, err := d.db.QueryContext(ctx, "SELECT type, COUNT(*) FROM content GROUP BY type")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var contentType string
+		var count int64
+		if err := rows.Scan(&contentType, &count); err != nil {
+			return nil, err
+		}
+		stats.ContentItemsByType[contentType] = count
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// Get total page words
+	row = d.db.QueryRowContext(ctx, `
+		SELECT COALESCE(SUM(LENGTH(content) - LENGTH(REPLACE(content, ' ', '')) + 1), 0)
+		FROM pages
+		WHERE LENGTH(TRIM(content)) > 0
+	`)
+	if err := row.Scan(&stats.TotalPageWords); err != nil {
 		return nil, err
 	}
 
