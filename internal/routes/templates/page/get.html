@@ -68,7 +68,7 @@
                                 name: "content",
                             },
                         });
-                        editor.setValue("{{ .Page.Content }}")
+                        editor.setValue("{{ if .Page }}{{ .Page.Content }}{{ end }}")
                     });
                 </script>
                 <button type="submit">Update</button>

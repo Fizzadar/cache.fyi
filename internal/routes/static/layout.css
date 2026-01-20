@@ -38,6 +38,11 @@ input, select, button, textarea {
     background: #333;
     color: #E1E1E1;
     border: none;
+
+    &.big {
+        padding: 20px;
+        font-size: 20px;
+    }
 }
 button {
     cursor: pointer;
@@ -172,6 +177,15 @@ header {
             margin-left: -85px;
             position: fixed;
             font-size: 14px;
+        }
+
+        form {
+            display: inline;
+
+            input {
+                padding: 4px;
+                font-size: 14px;
+            }
         }
     }
 }

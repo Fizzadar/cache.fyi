@@ -1,4 +1,5 @@
 {{ define "header" }}
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -92,14 +93,65 @@
     <script type="text/javascript">
         const contentView = document.getElementById("content-view");
         const contentEdit = document.getElementById("content-edit");
-        document.getElementById("enable-content-view").addEventListener("click", () => {
-            contentView.style.display = "block";
-            contentEdit.style.display = "none";
-        })
-        document.getElementById("enable-content-edit").addEventListener("click", () => {
-            contentView.style.display = "none";
-            contentEdit.style.display = "block";
-        })
+        if (contentView && contentEdit) {
+            document.getElementById("enable-content-view").addEventListener("click", () => {
+                contentView.style.display = "block";
+                contentEdit.style.display = "none";
+            })
+            document.getElementById("enable-content-edit").addEventListener("click", () => {
+                contentView.style.display = "none";
+                contentEdit.style.display = "block";
+            })
+        }
+
+        // Add copy buttons to all textareas
+        document.addEventListener('DOMContentLoaded', function() {
+            const pres = document.querySelectorAll('pre');
+
+            pres.forEach(pre => {
+                // Create wrapper if pre doesn't have one
+                if (!pre.parentElement.classList.contains('pre-wrapper')) {
+                    const wrapper = document.createElement('div');
+                    wrapper.style.position = 'relative';
+                    wrapper.style.display = 'inline-block';
+                    wrapper.style.width = '100%';
+                    wrapper.classList.add('pre-wrapper');
+
+                    pre.parentNode.insertBefore(wrapper, pre);
+                    wrapper.appendChild(pre);
+                }
+
+                // Create copy button
+                const copyBtn = document.createElement('button');
+                copyBtn.textContent = 'copy';
+                copyBtn.type = 'button';
+                copyBtn.style.position = 'absolute';
+                copyBtn.style.top = '5px';
+                copyBtn.style.right = '5px';
+                copyBtn.style.padding = '2px 6px';
+                copyBtn.style.fontSize = '11px';
+                copyBtn.style.cursor = 'pointer';
+                copyBtn.style.zIndex = '10';
+
+                copyBtn.addEventListener('click', async function() {
+                    try {
+                        await navigator.clipboard.writeText(pre.textContent);
+                        copyBtn.textContent = 'copied!';
+                        setTimeout(() => {
+                            copyBtn.textContent = 'copy';
+                        }, 1500);
+                    } catch (err) {
+                        console.error('Failed to copy:', err);
+                        copyBtn.textContent = 'error';
+                        setTimeout(() => {
+                            copyBtn.textContent = 'copy';
+                        }, 1500);
+                    }
+                });
+
+                pre.parentElement.appendChild(copyBtn);
+            });
+        });
     </script>
 </body>
 </html>
@@ -122,7 +174,7 @@
         </tr>
     </thead>
     <tbody>
-        {{ range $index, $item := .Contents }}
+        {{ range $index, $item := . }}
         <tr class="{{ if .ParentID }}child-row{{ else }}root-row{{ end }}"
             style="{{ if .ParentID }}display: none;{{ end }}"
             data-content-id="{{ .ID }}"
@@ -224,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <td>{{ range .Tags }}
                 <strong><a href="/t/{{ . }}">#{{ . }}</a></strong>
             {{ end }}</td>
-            <td>{{ if .Pinned }}check{{ end }}</td>
+            <td>{{ if .Pinned }}✅{{ end }}</td>
         </tr>
         {{ end }}
     </tbody>
