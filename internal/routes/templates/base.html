@@ -14,6 +14,8 @@
             c | cache.fyi
         {{ else if eq .Section "tags" }}
             t{{ if .Tag }}/{{ .Tag }}{{ end }} | cache.fyi
+        {{ else if eq .Section "search" }}
+            search | cache.fyi
         {{ else }}
             h | cache.fyi
         {{ end }}
@@ -56,8 +58,16 @@
                 &raquo; {{ if .Tag }}<a href="/tags">tags</a>{{ else }}tags{{ end }}
                 {{ if .Tag }}&raquo; {{ .Tag }}{{ end }}
             {{ end }}
+
+            {{ if eq .Section "search" }}
+                &raquo; search
+            {{ end }}
         </div>
         <div class="right">
+            <form action="/search">
+                <input type="text" placeholder="search..." action="search" name="q" />
+            </form>
+            &middot;
             <a href="/pages">pages</a>
             &middot;
             <a href="/content">content</a>

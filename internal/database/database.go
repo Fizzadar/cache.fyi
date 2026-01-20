@@ -7,9 +7,10 @@ import (
 	"path"
 	"strings"
 
-	"github.com/fizzadar/cache.fyi/internal/config"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rs/zerolog"
+
+	"github.com/fizzadar/cache.fyi/internal/config"
 )
 
 //go:embed migrations
@@ -55,6 +56,10 @@ type Database struct {
 	stmtDeleteTag,
 	stmtGetTagID,
 
+	stmtSearchPages,
+	stmtSearchContent,
+	stmtSearchTags,
+
 	stmtInsertLog *sql.Stmt
 }
 
@@ -78,6 +83,8 @@ func NewDatabase(cfg config.CachefyiConfig, log zerolog.Logger) *Database {
 	} else if err = d.initContentStatements(); err != nil {
 		panic(err)
 	} else if err = d.initTagStatements(); err != nil {
+		panic(err)
+	} else if err = d.initSearchStatements(); err != nil {
 		panic(err)
 	} else if err = d.initLogStatements(); err != nil {
 		panic(err)

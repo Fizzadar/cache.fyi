@@ -3,11 +3,16 @@
 <div class="wrapper">
     <div class="home">
         <h1>Stuff</h1>
-        <a href="/pages">pages</a>
-        &middot;
-        <a href="/content">content</a>
-        &middot;
-        <a href="/tags">tags</a>
+        <form method="GET" action="/search">
+            <input class="big" type="text" name="q" placeholder="Search..." />
+        </form>
+        <div>
+            <a href="/pages">pages</a>
+            &middot;
+            <a href="/content">content</a>
+            &middot;
+            <a href="/tags">tags</a>
+        </div>
     </div>
 
     <div class="home">

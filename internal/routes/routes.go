@@ -37,7 +37,8 @@ type Routes struct {
 	listContentPageTemplate,
 	listContentAutoTagsTemplate,
 	listPageAutoTagsTemplate,
-	getStatsTemplate *template.Template
+	getStatsTemplate,
+	searchTemplate *template.Template
 }
 
 func NewRoutes(cfg config.CachefyiConfig, log zerolog.Logger, db *database.Database) *Routes {
@@ -56,6 +57,8 @@ func NewRoutes(cfg config.CachefyiConfig, log zerolog.Logger, db *database.Datab
 	} else if err := routes.initTagTemplates(); err != nil {
 		panic(err)
 	} else if err := routes.initStatsTemplates(); err != nil {
+		panic(err)
+	} else if err := routes.initSearchTemplates(); err != nil {
 		panic(err)
 	}
 
@@ -139,6 +142,9 @@ func NewRoutes(cfg config.CachefyiConfig, log zerolog.Logger, db *database.Datab
 
 	// Stats
 	mux.HandleFunc("GET /stats", authHandler(routes.GetStats))
+
+	// Search
+	mux.HandleFunc("GET /search", authHandler(routes.Search))
 
 	// Add zerolog middleware
 	handler := hlog.NewHandler(log)(mux)

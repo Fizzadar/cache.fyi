@@ -1,0 +1,44 @@
+{{ template "header" . }}
+
+<div class="wrapper">
+    <h1 class="wide">Search</h1>
+
+    <form method="GET" action="/search" class="wide">
+        <input type="text" name="q" value="{{ .Query }}" placeholder="Search pages, content, and tags..." autofocus />
+        <input type="number" name="l" value="{{ .Limit }}" />
+        <button type="submit">Search</button>
+    </form>
+
+    {{ if .Results }}
+        {{ if or .Results.Pages .Results.Content .Results.Tags }}
+            {{ if .Results.Tags }}
+            <div class="wide">
+                <h2>Tags ({{ len .Results.Tags }})</h2>
+                <div>
+                    {{ range .Results.Tags }}
+                        <a href="/t/{{ .Name }}" class="tag">#{{ .Name }}</a>
+                    {{ end }}
+                </div>
+            </div>
+            {{ end }}
+
+            {{ if .Results.Pages }}
+            <div class="wide">
+                <h2>Pages ({{ len .Results.Pages }})</h2>
+                {{ template "page-table" .Results.Pages }}
+            </div>
+            {{ end }}
+
+            {{ if .Results.Content }}
+            <div class="wide">
+                <h2>URL Content ({{ len .Results.Content }})</h2>
+                {{ template "content-table" .Results.Content }}
+            </div>
+            {{ end }}
+        {{ else }}
+            <p class="wide">No results found for "{{ .Query }}"</p>
+        {{ end }}
+    {{ end }}
+</div>
+
+{{ template "footer" . }}
